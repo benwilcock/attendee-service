@@ -1,4 +1,11 @@
 ---
+resource_types:
+- name: slack-notification
+  type: docker-image
+  source:
+    repository: cfcommunity/slack-notification-resource
+    tag: latest
+
 resources:
 - name: attendee-service-source
   type: git
@@ -6,20 +13,32 @@ resources:
     uri: https://github.com/benwilcock/attendee-service
     branch: master
 
-- name: deploy-attendee-service
+- name: cf-deploy-attendee-service
   type: cf
   source:
     api: api.run.pivotal.io
     username: {{cf-user}}
     password: {{cf-password}}
     organization: pivotal-emea-cso
-    space: bwilcockDev
+    space: bwilcock
+
+- name: 1h
+  type: time
+  source: {interval: 1h}
+
+- name: slack-alert
+  type: slack-notification
+  source:
+    url: https://hooks.slack.com/services/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
+    insecure: true
 
 jobs:
 - name: test
   public: true
   plan:
   - get: attendee-service-source
+    trigger: true
+  - get: 1h
     trigger: true
   - task: test
     file: attendee-service-source/ci/tasks/test.yml
@@ -30,9 +49,12 @@ jobs:
   - get: attendee-service-source
     trigger: true
     passed: [test]
+  - get: 1h
+    trigger: true
+    passed: [test]
   - task: package
     file: attendee-service-source/ci/tasks/package.yml
-  - put: deploy-attendee-service
+  - put: cf-deploy-attendee-service
     params:
       manifest: attendee-service-source/manifest.yml
       path: package-output/attendee-service.jar
@@ -43,8 +65,14 @@ jobs:
   - get: attendee-service-source
     trigger: true
     passed: [deploy]
+  - get: 1h
+    trigger: true
+    passed: [deploy]
   - task: smoke_test
     file: attendee-service-source/ci/tasks/smoke-test.yml
     params:
       ATTENDEE_SERVICE_URL: http://attendee-service-unlistening-haruspex.cfapps.io
-
+  - put: slack-alert
+    params:
+      text: |
+        The smoke test for $BUILD_PIPELINE_NAME has passed.
