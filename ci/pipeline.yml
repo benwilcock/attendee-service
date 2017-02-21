@@ -29,7 +29,7 @@ resources:
 - name: slack-alert
   type: slack-notification
   source:
-    url: https://hooks.slack.com/services/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
+    url: {{webhook}}
     insecure: true
 
 jobs:
