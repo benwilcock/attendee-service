@@ -22,9 +22,9 @@ resources:
     organization: pivotal-emea-cso
     space: bwilcock
 
-- name: 1h
+- name: 6h
   type: time
-  source: {interval: 1h}
+  source: {interval: 6h}
 
 - name: slack-alert
   type: slack-notification
@@ -38,7 +38,7 @@ jobs:
   plan:
   - get: attendee-service-source
     trigger: true
-  - get: 1h
+  - get: 6h
     trigger: true
   - task: test
     file: attendee-service-source/ci/tasks/test.yml
@@ -49,7 +49,7 @@ jobs:
   - get: attendee-service-source
     trigger: true
     passed: [test]
-  - get: 1h
+  - get: 6h
     trigger: true
     passed: [test]
   - task: package
@@ -65,7 +65,7 @@ jobs:
   - get: attendee-service-source
     trigger: true
     passed: [deploy]
-  - get: 1h
+  - get: 6h
     trigger: true
     passed: [deploy]
   - task: smoke_test
