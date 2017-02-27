@@ -16,11 +16,11 @@ resources:
 - name: cf-deploy-attendee-service
   type: cf
   source:
-    api: api.run.pivotal.io
+    api: {{cf-endpoint}}
     username: {{cf-user}}
     password: {{cf-password}}
-    organization: pivotal-emea-cso
-    space: bwilcock
+    organization: {{cf-org}}
+    space: {{cf-space}}
 
 - name: 6h
   type: time
